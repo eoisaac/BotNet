@@ -1,6 +1,9 @@
 import argparse
-from bot import Bot
 from threading import Thread
+
+import paramiko
+
+from bot import Bot
 
 
 class BotNet:
@@ -35,7 +38,18 @@ class BotNet:
 
 
     def __try_connect(self, password: str):
-        print(password)
+        bot = Bot(self.host, self.user, password)
+
+        try:
+            bot.connect()
+            self.__bots.append(bot)
+        except:
+            pass
+
+
+    def disconnect_all(self):
+        for bot in self.__bots:
+            bot.disconnect()
 
 
     def run(self):
