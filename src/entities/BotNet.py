@@ -1,9 +1,7 @@
 import argparse
 from threading import Thread
 from typing import Optional
-
 from termcolor import colored
-
 from src.entities.Bot import Bot
 
 
@@ -44,15 +42,20 @@ class BotNet:
         bot = Bot(self.host, self.user, password)
 
         try:
-            # bot.connect()
-            self.__bots.append(bot)
+            is_connected = bot.connect()
+            if is_connected:
+                print(colored(f'Connected to [{bot.id}][{bot.name}]', 'green'))
+                self.__bots.append(bot)
         except:
             pass
 
 
     def disconnect_all(self):
         for bot in self.__bots:
-            bot.disconnect()
+            try:
+                bot.disconnect()
+            except:
+                pass
 
 
     def __select_bot(self) -> Optional[Bot]:
@@ -61,7 +64,7 @@ class BotNet:
             print(colored('r: Return to menu', 'yellow'))
             print('\n')
             for bot in self.__bots:
-                print(f'{bot.id}: {bot}')
+                print(f'[{bot.id}][{bot.name}]')
             selection = input('> ')
             if selection == 'r':
                 return None
@@ -76,6 +79,7 @@ class BotNet:
             print(colored('Choose an option:', 'yellow'))
             print(colored('1. Select a specific bot', 'yellow'))
             print(colored('2. Run command on all bots', 'yellow'))
+            print(colored('3. Exit', 'yellow'))
             print('\n')
 
             option = input('> ')
@@ -83,7 +87,7 @@ class BotNet:
                 bot = self.__select_bot()
                 if bot is None:
                     continue
-                command = input(f'Enter command to execute on [{bot.id}]: ')
+                command = input(f'Enter command to execute on [{bot.id}][{bot.name}]: ')
                 result = bot.execute_command(command)
                 print(result)
 
@@ -97,17 +101,21 @@ class BotNet:
 
                 results = []
                 for bot in self.__bots:
-                    print(f'Executing command on [{bot.id}]...')
+                    print(f'Executing command on [{bot.id}][{bot.name}]...')
                     result = bot.execute_command(command)
                     results.append((bot, result))
                     print(result)
                 print('Command executed on all bots:')
                 for bot, result in results:
-                    print(f'[{bot.id}]: {result}')
+                    print(f'[{bot.id}][{bot.name}]: {result}')
+
+            elif option == '3':
+                print(colored('Exiting...', 'yellow'))
+                self.disconnect_all()
+                exit(0)
 
             else:
                 print(colored('Invalid option. Please enter 1, 2, or "m" to return to the menu.', 'red'))
-
 
 
     def __run(self):
