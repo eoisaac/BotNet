@@ -1,4 +1,3 @@
-from src.entities.Bot import Bot
 from src.entities.BotNet import BotNet
 
 botnet = BotNet()

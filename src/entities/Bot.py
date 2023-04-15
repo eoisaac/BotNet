@@ -12,6 +12,16 @@ class Bot:
         self.password = password
 
 
+    def list_files(self):
+        stdin, stdout, stderr = self.__client.exec_command('ls -a')
+        print(stdout.read().decode('utf-8'))
+
+
+    def open_tray(self):
+        stdin, stdout, stderr = self.__client.exec_command('eject -T')
+        print(stdout.read().decode('utf-8'))
+
+
     def connect(self):
         self.__client = SSHClient()
         self.__client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
