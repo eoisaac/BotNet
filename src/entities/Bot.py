@@ -13,12 +13,12 @@ class Bot:
 
 
     def connect(self):
-        self.client = SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.client.connect(self.host, username=self.user, password=self.password)
+        self.__client = SSHClient()
+        self.__client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.__client.connect(self.host, username=self.user, password=self.password)
 
 
     def disconnect(self):
-        self.client.close()
+        self.__client.close()
 
 
