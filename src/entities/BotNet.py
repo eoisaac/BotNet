@@ -1,6 +1,11 @@
 import argparse
 from threading import Thread
+from typing import Optional
+
+from termcolor import colored
+
 from src.entities.Bot import Bot
+
 
 class BotNet:
     def __init__(self, host: str = '', user: str = '', pwd_src_path: str = ''):
@@ -50,45 +55,59 @@ class BotNet:
             bot.disconnect()
 
 
-    def __select_bot(self) -> Bot:
+    def __select_bot(self) -> Optional[Bot]:
         while True:
-            print('Select a bot:')
+            print(colored('Select a bot:', 'yellow'))
+            print(colored('r: Return to menu', 'yellow'))
+            print('\n')
             for bot in self.__bots:
-                print(f'Bot: {bot.id}')
-            try:
-                selection = str(input('> '))
-                for bot in self.__bots:
-                    if bot.id == selection:
-                        return bot
-                print('Invalid selection. Please enter a number from the list above.')
-            except ValueError:
-                print('Invalid selection. Please enter a number from the list above.')
+                print(f'{bot.id}: {bot}')
+            selection = input('> ')
+            if selection == 'r':
+                return None
+            for bot in self.__bots:
+                if bot.id == selection:
+                    return bot
+            print(colored('Invalid selection. Please enter a number from the list above or "r" to return to the menu.', 'red'))
 
 
     def __execute_command(self):
-        print('Choose an option:')
-        print('1. Select a specific bot')
-        print('2. Run command on all bots')
+        while True:
+            print(colored('Choose an option:', 'yellow'))
+            print(colored('1. Select a specific bot', 'yellow'))
+            print(colored('2. Run command on all bots', 'yellow'))
+            print('\n')
 
-        option = input('> ')
-        if option == '1':
-            bot = self.__select_bot()
-            command = input(f'Enter command to execute on [{bot.id}]: ')
-            result = bot.execute_command(command)
-            print(result)
-        elif option == '2':
-            command = input('Enter command to execute on all bots: ')
-            results = []
-            for bot in self.__bots:
-                print(f'Executing command on [{bot.id}]...')
+            option = input('> ')
+            if option == '1':
+                bot = self.__select_bot()
+                if bot is None:
+                    continue
+                command = input(f'Enter command to execute on [{bot.id}]: ')
                 result = bot.execute_command(command)
-                results.append((bot, result))
                 print(result)
-            print('Command executed on all bots:')
-            for bot, result in results:
-                print(f'{bot}: {result}')
-        else:
-            print('Invalid option. Please enter 1 or 2.')
+
+            elif option == '2':
+                print(colored('r: Return to menu', 'yellow'))
+                print('\n')
+                command = input('Enter command to execute on all bots: ')
+
+                if command == 'r':
+                    return None
+
+                results = []
+                for bot in self.__bots:
+                    print(f'Executing command on [{bot.id}]...')
+                    result = bot.execute_command(command)
+                    results.append((bot, result))
+                    print(result)
+                print('Command executed on all bots:')
+                for bot, result in results:
+                    print(f'[{bot.id}]: {result}')
+
+            else:
+                print(colored('Invalid option. Please enter 1, 2, or "m" to return to the menu.', 'red'))
+
 
 
     def __run(self):
