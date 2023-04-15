@@ -36,7 +36,7 @@ def inicio():
     if host == None or arq_senhas == None or usuario == None:
         print( analisador.usage)
         exit(0)
-        
+
     fn = open(arq_senhas, 'r')
     for linha in fn.readlines():
         if encontrado:

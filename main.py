@@ -1,12 +1,19 @@
 import argparse
+from bot import Bot
+from threading import Thread
 
 
 class BotNet:
     def __init__(self, host: str = '', user: str = '', pwd_src_path: str = ''):
+        self.__bots: list[Bot] = []
+
         self.host = host
         self.user = user
         self.pwd_src_path = pwd_src_path
-        self.__get_args()
+
+        if not self.host or not self.user or not self.pwd_src_path:
+            self.__get_args()
+
 
     def __get_args(self):
         parser = argparse.ArgumentParser(description='Zip file password cracker')
@@ -20,9 +27,30 @@ class BotNet:
         self.pwd_src_path = args.pwd_src_path
 
 
+    def __get_passwords(self):
+        with open(self.pwd_src_path) as passwords_file:
+            for password in passwords_file:
+                password = password.strip()
+                yield password
+
+
+    def __try_connect(self, password: str):
+        print(password)
+
+
+    def run(self):
+        threads = []
+        for password in self.__get_passwords():
+            thread = Thread(target=self.__try_connect, args=(password,))
+            thread.start()
+            threads.append(thread)
+
+        [t.join() for t in threads]
+
+
+# with open(passwords_file) as f:
 
 botnet = BotNet()
-print(botnet.host)
-print(botnet.user)
-print(botnet.pwd_src_path)
+botnet.run()
+# python3 main.py -H localhost -u eoisaac -F senhas.txt
 
