@@ -24,10 +24,12 @@ class Bot:
             self.__client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.__client.connect(self.host, username=self.user, password=self.password)
 
-            hostname = self.execute_command('hostname').replace('\n', '')
-            self.name = f'{self.user}@{hostname}'
+            bot_name = self.execute_command('whoami').replace('\n', '')
+            self.name = f'{self.user}@{bot_name}'
             return True
         except:
+            if self.__client:
+                self.__client.close()
             return False
 
 

@@ -44,7 +44,6 @@ class BotNet:
 
 
     def __set_bots(self, user: str):
-
         for password in self.__get_passwords():
             bot = Bot(self.host, user, password)
 
@@ -137,8 +136,8 @@ class BotNet:
         print(colored('Connecting to bots...', 'yellow'))
         try:
             threads = []
-            for password in self.__get_users():
-                thread = Thread(target=self.__set_bots, args=(password,))
+            for user in self.__get_users():
+                thread = Thread(target=self.__set_bots, args=(user,))
                 thread.start()
                 threads.append(thread)
             [t.join() for t in threads]
